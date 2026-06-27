@@ -284,7 +284,7 @@ class InstallerApp(App):
         Binding("shift+d", "scan_ansible", "Scan Ansible"),
         Binding("e", "export_recipe", "Export Recipe"),
         Binding("t", "cycle_theme", "Cycle Theme"),
-        Binding("shift+d", "run_diff", "Run Diff"),
+        Binding("ctrl+d", "run_diff", "Run Diff"),
         Binding("shift+t", "load_timetravel", "Time Travel"),
     ]
 
@@ -495,34 +495,33 @@ class InstallerApp(App):
 
     def _render_config(self) -> None:
         selected_ids = [k for k, v in self.selected_map.items() if v]
-        container = self.query_one("#config-container", Vertical)
-        container.remove_children()
+        panel = self.query_one("#config-panel", Static)
         if not selected_ids:
-            container.mount(Static("Select packages on the Packages tab to browse their configuration files."))
+            panel.update("Select packages on the Packages tab to browse their configuration files.")
             return
+        lines: list[str] = []
         for pkg_id in selected_ids:
             pkg = next((p for p in self.packages if p.id == pkg_id), None)
             if not pkg:
                 continue
-            container.mount(Static(f"[b]{pkg.name}[/b] ({pkg.id})", classes="section-title"))
-            info_lines = [f"Provider: {pkg.provider.value}"]
+            lines.append(f"[b]{pkg.name}[/b] ({pkg.id})")
+            lines.append(f"Provider: {pkg.provider.value}")
             if pkg.config:
                 for k, v in pkg.config.items():
-                    info_lines.append(f"  {k} = {v}")
+                    lines.append(f"  {k} = {v}")
             if pkg.install_args:
-                info_lines.append(f"Install args: {' '.join(pkg.install_args)}")
+                lines.append(f"Install args: {' '.join(pkg.install_args)}")
             if pkg.verify_cmd:
-                info_lines.append(f"Verify: {pkg.verify_cmd}")
+                lines.append(f"Verify: {pkg.verify_cmd}")
             if pkg.post_install_msg:
-                info_lines.append(f"[yellow]Post-install note:[/yellow] {pkg.post_install_msg}")
+                lines.append(f"[yellow]Post-install note:[/yellow] {pkg.post_install_msg}")
             if pkg.dependencies:
-                info_lines.append(f"[cyan]Dependencies:[/cyan] {', '.join(pkg.dependencies)}")
+                lines.append(f"[cyan]Dependencies:[/cyan] {', '.join(pkg.dependencies)}")
             if pkg.conflicts:
-                info_lines.append(f"[red]Conflicts:[/red] {', '.join(pkg.conflicts)}")
-            container.mount(Static("\n".join(info_lines)))
-            config_found = self._scan_and_mount_config(container, pkg_id)
-            if not config_found:
-                container.mount(Static("  No configuration directories found in ~/.config or home.", classes="config-file"))
+                lines.append(f"[red]Conflicts:[/red] {', '.join(pkg.conflicts)}")
+            lines.extend(self._scan_config_lines(pkg_id))
+            lines.append("")
+        panel.update(chr(10).join(lines))
 
     def _scan_config_lines(self, pkg_id: str) -> list[str]:
         home = Path.home()
