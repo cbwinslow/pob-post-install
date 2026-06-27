@@ -39,6 +39,8 @@ from pob_post_install.rollback import RollbackManager
 from pob_post_install.inventory import InventoryCollector
 from pob_post_install.history_discovery import HistoryDiscovery
 from pob_post_install.diff import DiffEngine
+from pob_post_install.health import HealthChecker
+from pob_post_install.updates import UpdateChecker
 from pob_post_install.timetravel import TimeTravel
 from pob_post_install.themes import ThemeManager
 from pob_post_install.hooks import HookManager
@@ -302,6 +304,7 @@ class InstallerApp(App):
     _discovery_items: list[dict] = []
     _diff_result: dict[str, Any] = {}
     _timetravel_receipts: list[Path] = []
+    _health_results: list[dict[str, Any]] = []
 
     def __init__(self, packages: list[Package], **kwargs):
         super().__init__(**kwargs)
@@ -1011,6 +1014,63 @@ class InstallerApp(App):
         if not self._timetravel_receipts:
             table.add_row("", "No receipts found", "", "", "", "", key="tt-empty")
 
+    def action_score_health(self) -> None:
+        tabbed = self.query_one("#tabbed", TabbedContent)
+        health_tab = self.query_one("#tab-health", TabPane)
+        tabbed.active = health_tab
+        table = self.query_one("#health-table", PackageTable)
+        table.clear(columns=False)
+        table.add_column("Package", key="package")
+        table.add_column("Provider", key="provider")
+        table.add_column("Score", key="score")
+        table.add_column("Notes", key="notes")
+        table.zebra_stripes = True
+        table.cursor_type = "row"
+        self._health_results = []
+        for pkg in self.packages:
+            result = HealthChecker.score(pkg.id, pkg.provider.value)
+            self._health_results.append(result)
+            score_text = f"{result['score']}/100"
+            notes = ", ".join(result["notes"][:2]) or "-"
+            table.add_row(
+                pkg.id,
+                pkg.provider.value,
+                score_text,
+                notes,
+                key=pkg.id,
+            )
+        self.write_log(f"Health scored {len(self._health_results)} packages.")
+
+    def action_check_updates(self) -> None:
+        tabbed = self.query_one("#tabbed", TabbedContent)
+        updates_tab = self.query_one("#tab-updates", TabPane)
+        tabbed.active = updates_tab
+        table = self.query_one("#updates-table", PackageTable)
+        table.clear(columns=False)
+        table.add_column("Package", key="package")
+        table.add_column("Provider", key="provider")
+        table.add_column("Update Available", key="update")
+        table.add_column("Latest", key="latest")
+        table.zebra_stripes = True
+        table.cursor_type = "row"
+        import asyncio
+        loop = asyncio.get_event_loop()
+        for pkg in self.packages:
+            try:
+                result = loop.run_until_complete(UpdateChecker.check(pkg.id, pkg.provider.value))
+                update_text = "Yes" if result.get("update_available") else "No"
+                latest = result.get("latest") or "-"
+                table.add_row(
+                    pkg.id,
+                    pkg.provider.value,
+                    update_text,
+                    latest,
+                    key=pkg.id,
+                )
+            except Exception as e:
+                table.add_row(pkg.id, pkg.provider.value, "Error", str(e), key=pkg.id)
+        self.write_log("Update check complete.")
+
     def action_export_recipe(self) -> None:
         selected_ids = [k for k, v in self.selected_map.items() if v]
         if not selected_ids:
@@ -1122,6 +1182,12 @@ class InstallerApp(App):
             return
         if btn_id == "btn-diff-receipts":
             self.write_log("Select two receipts in the table first.")
+            return
+        if btn_id == "btn-score-health":
+            self.action_score_health()
+            return
+        if btn_id == "btn-check-updates":
+            self.action_check_updates()
             return
         if btn_id in ("btn-search-apt", "btn-search-pypi"):
             query = self.query_one("#search-query", Input).value.strip()
