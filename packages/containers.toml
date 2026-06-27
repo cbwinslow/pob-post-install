@@ -1,0 +1,45 @@
+[[package]]
+id = "docker-ce"
+name = "Docker CE"
+description = "Container runtime"
+category = "Containers"
+provider = "apt"
+install_args = ["docker-ce", "docker-ce-cli", "containerd.io", "docker-buildx-plugin", "docker-compose-plugin"]
+verify_cmd = "docker --version"
+post_install_msg = "sudo usermod -aG docker $USER (re-login required)"
+
+[[package]]
+id = "kubectl"
+name = "kubectl"
+description = "Kubernetes CLI"
+category = "Containers"
+provider = "script"
+install_args = ["bash", "-c", "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg && echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list && apt update && apt install -y kubectl"]
+verify_cmd = "kubectl version --client"
+
+[[package]]
+id = "helm"
+name = "Helm"
+description = "Kubernetes package manager"
+category = "Containers"
+provider = "script"
+install_args = ["bash", "-c", "curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash"]
+verify_cmd = "helm version"
+
+[[package]]
+id = "minikube"
+name = "Minikube"
+description = "Local Kubernetes cluster"
+category = "Containers"
+provider = "apt"
+install_args = ["minikube"]
+verify_cmd = "minikube version"
+
+[[package]]
+id = "k9s"
+name = "k9s"
+description = "Kubernetes terminal UI"
+category = "Containers"
+provider = "script"
+install_args = ["bash", "-c", "curl -sS https://webinstall.dev/k9s | bash"]
+verify_cmd = "k9s version --client"

@@ -1,0 +1,62 @@
+[[package]]
+id = "docker-nginx"
+name = "Docker Nginx"
+description = "Official Nginx container image"
+category = "Docker"
+provider = "script"
+install_args = ["bash", "-c", "docker pull nginx:alpine"]
+verify_cmd = "docker images nginx --format '{{.Tag}}'"
+
+[[package]]
+id = "docker-postgres"
+name = "Docker PostgreSQL"
+description = "Official Postgres container"
+category = "Docker"
+provider = "script"
+install_args = ["bash", "-c", "docker pull postgres:16-alpine"]
+verify_cmd = "docker images postgres --format '{{.Tag}}'"
+
+[[package]]
+id = "docker-redis"
+name = "Docker Redis"
+description = "Official Redis container"
+category = "Docker"
+provider = "script"
+install_args = ["bash", "-c", "docker pull redis:7-alpine"]
+verify_cmd = "docker images redis --format '{{.Tag}}'"
+
+[[package]]
+id = "docker-mongo"
+name = "Docker MongoDB"
+description = "Official MongoDB container"
+category = "Docker"
+provider = "script"
+install_args = ["bash", "-c", "docker pull mongo:7"]
+verify_cmd = "docker images mongo --format '{{.Tag}}'"
+
+[[package]]
+id = "docker-grafana"
+name = "Docker Grafana"
+description = "Official Grafana container"
+category = "Docker"
+provider = "script"
+install_args = ["bash", "-c", "docker pull grafana/grafana:latest"]
+verify_cmd = "docker images grafana/grafana --format '{{.Tag}}'"
+
+[[package]]
+id = "docker-prometheus"
+name = "Docker Prometheus"
+description = "Official Prometheus container"
+category = "Docker"
+provider = "script"
+install_args = ["bash", "-c", "docker pull prom/prometheus:latest"]
+verify_cmd = "docker images prom/prometheus --format '{{.Tag}}'"
+
+[[package]]
+id = "docker-uptime-kuma"
+name = "Uptime Kuma"
+description = "Self-hosted monitoring"
+category = "Docker"
+provider = "script"
+install_args = ["bash", "-c", "docker pull louislam/uptime-kuma:1"]
+verify_cmd = "docker images louislam/uptime-kuma --format '{{.Tag}}'"

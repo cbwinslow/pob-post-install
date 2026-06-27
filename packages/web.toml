@@ -1,0 +1,26 @@
+[[package]]
+id = "nginx"
+name = "Nginx"
+description = "Web server / reverse proxy"
+category = "Web"
+provider = "apt"
+install_args = ["nginx"]
+verify_cmd = "nginx -v 2>&1"
+
+[[package]]
+id = "caddy"
+name = "Caddy"
+description = "Auto-HTTPS web server"
+category = "Web"
+provider = "apt"
+install_args = ["caddy"]
+verify_cmd = "caddy version"
+
+[[package]]
+id = "traefik"
+name = "Traefik"
+description = "Cloud-native proxy"
+category = "Web"
+provider = "script"
+install_args = ["bash", "-c", "docker pull traefik:v3.1"]
+verify_cmd = "docker images traefik --format '{{.Tag}}'"

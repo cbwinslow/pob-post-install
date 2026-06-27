@@ -1,0 +1,26 @@
+[[package]]
+id = "netdata"
+name = "Netdata"
+description = "Real-time monitoring"
+category = "Monitoring"
+provider = "script"
+install_args = ["bash", "-c", "curl -fsSL https://get.netdata.cloud/kickstart.sh | bash"]
+verify_cmd = "netdata -W buildinfo"
+
+[[package]]
+id = "prometheus"
+name = "Prometheus"
+description = "Metrics collection"
+category = "Monitoring"
+provider = "script"
+install_args = ["bash", "-c", "useradd --no-create-home --shell /usr/sbin/nologin prometheus && mkdir -p /etc/prometheus /var/lib/prometheus && curl -fsSL -o /tmp/prom.tar.gz https://github.com/prometheus/prometheus/releases/latest/download/prometheus-*.linux-amd64.tar.gz && tar -xzf /tmp/prom.tar.gz -C /tmp && cp /tmp/prometheus-*/prometheus /tmp/prometheus-*/promtool /usr/local/bin/ && chown prometheus:prometheus /usr/local/bin/prometheus /usr/local/bin/promtool"]
+verify_cmd = "prometheus --version"
+
+[[package]]
+id = "grafana-server"
+name = "Grafana"
+description = "Metrics visualization"
+category = "Monitoring"
+provider = "apt"
+install_args = ["grafana-server"]
+verify_cmd = "grafana-server -v"

@@ -1,0 +1,79 @@
+[[package]]
+id = "python3"
+name = "Python 3"
+description = "Python runtime + headers"
+category = "Languages"
+provider = "apt"
+install_args = ["python3", "python3-pip", "python3-venv", "python3-dev"]
+
+[[package]]
+id = "pipx"
+name = "pipx"
+description = "Install Python CLI tools in venvs"
+category = "Languages"
+provider = "apt"
+install_args = ["pipx"]
+verify_cmd = "pipx --version"
+
+[[package]]
+id = "uv"
+name = "uv"
+description = "Fast Python package manager"
+category = "Languages"
+provider = "apt"
+install_args = ["uv"]
+verify_cmd = "uv --version"
+
+[[package]]
+id = "nodejs"
+name = "Node.js"
+description = "JavaScript runtime"
+category = "Languages"
+provider = "apt"
+install_args = ["nodejs"]
+verify_cmd = "node --version"
+
+[[package]]
+id = "npm"
+name = "npm"
+description = "Node package manager"
+category = "Languages"
+provider = "apt"
+install_args = ["npm"]
+verify_cmd = "npm --version"
+
+[[package]]
+id = "golang"
+name = "Go"
+description = "Go programming language"
+category = "Languages"
+provider = "apt"
+install_args = ["golang-go"]
+verify_cmd = "go version"
+
+[[package]]
+id = "rustc"
+name = "Rust"
+description = "Rust compiler"
+category = "Languages"
+provider = "apt"
+install_args = ["rustc", "cargo"]
+verify_cmd = "rustc --version"
+
+[[package]]
+id = "openjdk-17-jdk"
+name = "OpenJDK 17"
+description = "Java 17 LTS JDK"
+category = "Languages"
+provider = "apt"
+install_args = ["openjdk-17-jdk"]
+verify_cmd = "java -version 2>&1 | head -1"
+
+[[package]]
+id = "php-cli"
+name = "PHP CLI"
+description = "PHP command line"
+category = "Languages"
+provider = "apt"
+install_args = ["php-cli", "php-common", "php-curl", "php-mbstring", "php-xml", "php-zip"]
+verify_cmd = "php -v"

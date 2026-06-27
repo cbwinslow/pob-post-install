@@ -1,0 +1,151 @@
+[[package]]
+id = "curl"
+name = "cURL"
+description = "Command line HTTP client"
+category = "System"
+provider = "apt"
+install_args = ["curl"]
+
+[[package]]
+id = "wget"
+name = "Wget"
+description = "Network downloader"
+category = "System"
+provider = "apt"
+install_args = ["wget"]
+
+[[package]]
+id = "git"
+name = "Git"
+description = "Version control"
+category = "Dev"
+provider = "apt"
+install_args = ["git"]
+
+[[package]]
+id = "vim"
+name = "Vim"
+description = "Terminal editor"
+category = "Dev"
+provider = "apt"
+install_args = ["vim"]
+
+[[package]]
+id = "jq"
+name = "jq"
+description = "JSON processor"
+category = "Dev"
+provider = "apt"
+install_args = ["jq"]
+
+[[package]]
+id = "htop"
+name = "htop"
+description = "Process viewer"
+category = "System"
+provider = "apt"
+install_args = ["htop"]
+
+[[package]]
+id = "btop"
+name = "btop"
+description = "Resource monitor"
+category = "System"
+provider = "apt"
+install_args = ["btop"]
+
+[[package]]
+id = "tmux"
+name = "tmux"
+description = "Terminal multiplexer"
+category = "System"
+provider = "apt"
+install_args = ["tmux"]
+
+[[package]]
+id = "ufw"
+name = "UFW"
+description = "Uncomplicated firewall"
+category = "Security"
+provider = "apt"
+install_args = ["ufw"]
+post_install_msg = "Remember: ufw allow ssh && ufw enable"
+
+[[package]]
+id = "fail2ban"
+name = "Fail2Ban"
+description = "Intrusion prevention"
+category = "Security"
+provider = "apt"
+install_args = ["fail2ban"]
+
+[[package]]
+id = "docker-ce"
+name = "Docker CE"
+description = "Container runtime"
+category = "Containers"
+provider = "apt"
+install_args = ["docker-ce", "docker-ce-cli", "containerd.io", "docker-compose-plugin"]
+verify_cmd = "docker --version"
+
+[[package]]
+id = "python3"
+name = "Python 3"
+description = "Programming language"
+category = "Languages"
+provider = "apt"
+install_args = ["python3", "python3-pip", "python3-venv", "python3-dev"]
+
+[[package]]
+id = "nodejs"
+name = "Node.js"
+description = "JavaScript runtime"
+category = "Languages"
+provider = "apt"
+install_args = ["nodejs"]
+verify_cmd = "node --version"
+
+[[package]]
+id = "uv"
+name = "uv"
+description = "Fast Python package manager"
+category = "Languages"
+provider = "apt"
+install_args = ["uv"]
+verify_cmd = "uv --version"
+
+[[package]]
+id = "ansible"
+name = "Ansible"
+description = "Automation engine"
+category = "IaC"
+provider = "apt"
+install_args = ["ansible"]
+verify_cmd = "ansible --version"
+
+[[package]]
+id = "tofu"
+name = "OpenTofu"
+description = "Infrastructure as code"
+category = "IaC"
+provider = "apt"
+install_args = ["tofu"]
+verify_cmd = "tofu version"
+
+[[package]]
+id = "pulumi"
+name = "Pulumi"
+description = "Infrastructure as code SDK"
+category = "IaC"
+provider = "apt"
+install_args = ["pulumi"]
+verify_cmd = "pulumi version"
+
+[[package]]
+id = "certbot"
+name = "Certbot"
+description = "Let's Encrypt client"
+category = "Web"
+provider = "apt"
+install_args = ["certbot"]
+verify_cmd = "certbot --version"

@@ -1,0 +1,111 @@
+[[package]]
+id = "dnsutils"
+name = "DNS utils"
+description = "dig, nslookup, nsupdate"
+category = "Networking"
+provider = "apt"
+install_args = ["dnsutils"]
+
+[[package]]
+id = "net-tools"
+name = "net-tools"
+description = "ifconfig, netstat, route"
+category = "Networking"
+provider = "apt"
+install_args = ["net-tools"]
+
+[[package]]
+id = "iputils-ping"
+name = "iputils-ping"
+description = "ping utility"
+category = "Networking"
+provider = "apt"
+install_args = ["iputils-ping"]
+
+[[package]]
+id = "traceroute"
+name = "traceroute"
+description = "Network path tracing"
+category = "Networking"
+provider = "apt"
+install_args = ["traceroute"]
+
+[[package]]
+id = "mtr"
+name = "mtr"
+description = "Combined ping/traceroute"
+category = "Networking"
+provider = "apt"
+install_args = ["mtr"]
+
+[[package]]
+id = "nmap"
+name = "Nmap"
+description = "Network scanner"
+category = "Networking"
+provider = "apt"
+install_args = ["nmap"]
+
+[[package]]
+id = "tcpdump"
+name = "tcpdump"
+description = "Packet capture/analysis"
+category = "Networking"
+provider = "apt"
+install_args = ["tcpdump"]
+
+[[package]]
+id = "iperf3"
+name = "iperf3"
+description = "Network bandwidth testing"
+category = "Networking"
+provider = "apt"
+install_args = ["iperf3"]
+
+[[package]]
+id = "socat"
+name = "socat"
+description = "Multipurpose relay"
+category = "Networking"
+provider = "apt"
+install_args = ["socat"]
+
+[[package]]
+id = "openssh-server"
+name = "OpenSSH Server"
+description = "SSH server daemon"
+category = "Networking"
+provider = "apt"
+install_args = ["openssh-server"]
+
+[[package]]
+id = "openssh-client"
+name = "OpenSSH Client"
+description = "SSH client"
+category = "Networking"
+provider = "apt"
+install_args = ["openssh-client"]
+
+[[package]]
+id = "wireguard"
+name = "WireGuard"
+description = "Modern VPN tunnel"
+category = "Networking"
+provider = "apt"
+install_args = ["wireguard", "wireguard-tools"]
+
+[[package]]
+id = "ufw"
+name = "UFW"
+description = "Firewall management"
+category = "Networking"
+provider = "apt"
+install_args = ["ufw"]
+
+[[package]]
+id = "chrony"
+name = "Chrony"
+description = "NTP time sync"
+category = "Networking"
+provider = "apt"
+install_args = ["chrony"]

@@ -1,0 +1,112 @@
+[[package]]
+id = "git"
+name = "Git"
+description = "Version control"
+category = "Dev"
+provider = "apt"
+install_args = ["git"]
+
+[[package]]
+id = "git-lfs"
+name = "Git LFS"
+description = "Large file storage"
+category = "Dev"
+provider = "apt"
+install_args = ["git-lfs"]
+
+[[package]]
+id = "gh"
+name = "GitHub CLI"
+description = "GitHub from the command line"
+category = "Dev"
+provider = "apt"
+install_args = ["gh"]
+verify_cmd = "gh --version"
+
+[[package]]
+id = "jq"
+name = "jq"
+description = "JSON processor"
+category = "Dev"
+provider = "apt"
+install_args = ["jq"]
+
+[[package]]
+id = "yq"
+name = "yq"
+description = "YAML processor"
+category = "Dev"
+provider = "apt"
+install_args = ["yq"]
+
+[[package]]
+id = "make"
+name = "Make"
+description = "Build automation"
+category = "Dev"
+provider = "apt"
+install_args = ["make"]
+
+[[package]]
+id = "cmake"
+name = "CMake"
+description = "Build system generator"
+category = "Dev"
+provider = "apt"
+install_args = ["cmake"]
+
+[[package]]
+id = "pkg-config"
+name = "pkg-config"
+description = "Package metadata tool"
+category = "Dev"
+provider = "apt"
+install_args = ["pkg-config"]
+
+[[package]]
+id = "build-essential"
+name = "Build Essential"
+description = "Compile toolchain"
+category = "Dev"
+provider = "apt"
+install_args = ["build-essential"]
+
+[[package]]
+id = "python3-dev"
+name = "Python dev headers"
+description = "Python headers for building"
+category = "Dev"
+provider = "apt"
+install_args = ["python3-dev"]
+
+[[package]]
+id = "libssl-dev"
+name = "OpenSSL dev"
+description = "SSL development headers"
+category = "Dev"
+provider = "apt"
+install_args = ["libssl-dev"]
+
+[[package]]
+id = "libffi-dev"
+name = "libffi dev"
+description = "Foreign function interface"
+category = "Dev"
+provider = "apt"
+install_args = ["libffi-dev"]
+
+[[package]]
+id = "pre-commit"
+name = "pre-commit"
+description = "Git hook framework"
+category = "Dev"
+provider = "apt"
+install_args = ["pre-commit"]
+
+[[package]]
+id = "commitizen"
+name = "Commitizen"
+description = "Standardized commit messages"
+category = "Dev"
+provider = "apt"
+install_args = ["commitizen"]

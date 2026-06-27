@@ -1,0 +1,53 @@
+[[package]]
+id = "ansible"
+name = "Ansible"
+description = "Automation engine"
+category = "IaC"
+provider = "apt"
+install_args = ["ansible"]
+verify_cmd = "ansible --version"
+
+[[package]]
+id = "tofu"
+name = "OpenTofu"
+description = "Terraform-compatible IaC"
+category = "IaC"
+provider = "apt"
+install_args = ["tofu"]
+verify_cmd = "tofu version"
+
+[[package]]
+id = "pulumi"
+name = "Pulumi"
+description = "Infrastructure SDK"
+category = "IaC"
+provider = "apt"
+install_args = ["pulumi"]
+verify_cmd = "pulumi version"
+
+[[package]]
+id = "awscli"
+name = "AWS CLI"
+description = "Amazon Web Services CLI"
+category = "IaC"
+provider = "apt"
+install_args = ["awscli"]
+verify_cmd = "aws --version"
+
+[[package]]
+id = "azure-cli"
+name = "Azure CLI"
+description = "Microsoft Azure CLI"
+category = "IaC"
+provider = "apt"
+install_args = ["azure-cli"]
+verify_cmd = "az version"
+
+[[package]]
+id = "google-cloud-cli"
+name = "Google Cloud CLI"
+description = "GCP command line tools"
+category = "IaC"
+provider = "apt"
+install_args = ["google-cloud-cli"]
+verify_cmd = "gcloud version"

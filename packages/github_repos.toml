@@ -1,0 +1,72 @@
+[[package]]
+id = "lazygit"
+name = "lazygit"
+description = "Terminal UI for Git"
+category = "GitHub"
+provider = "github_repo"
+install_args = ["https://github.com/jesseduffield/lazygit.git"]
+config = { repo_url = "https://github.com/jesseduffield/lazygit.git", clone_dest = "/opt/lazygit", installer = "install.sh" }
+verify_cmd = "lazygit --version"
+
+[[package]]
+id = "lazydocker"
+name = "lazydocker"
+description = "Terminal UI for Docker"
+category = "GitHub"
+provider = "github_repo"
+config = { repo_url = "https://github.com/jesseduffield/lazydocker.git", clone_dest = "/opt/lazydocker", installer = "install.sh" }
+verify_cmd = "lazydocker --version"
+
+[[package]]
+id = "lazynpm"
+name = "lazynpm"
+description = "Terminal UI for npm"
+category = "GitHub"
+provider = "github_repo"
+config = { repo_url = "https://github.com/jesseduffield/lazynpm.git", clone_dest = "/opt/lazynpm", installer = "install.sh" }
+verify_cmd = "lazynpm --version"
+
+[[package]]
+id = "btop-rs"
+name = "btop"
+description = "Resource monitor (C++)"
+category = "GitHub"
+provider = "github_repo"
+config = { repo_url = "https://github.com/aristocratos/btop.git", clone_dest = "/opt/btop", installer = "install.sh", install_args = ["--install"] }
+verify_cmd = "btop --version"
+
+[[package]]
+id = "oha"
+name = "oha"
+description = "HTTP load generator in Rust"
+category = "GitHub"
+provider = "github_repo"
+config = { repo_url = "https://github.com/hatoo/oha.git", clone_dest = "/opt/oha", skip_installer = true }
+post_install_msg = "Build with: cd /opt/oha && cargo build --release && sudo cp target/release/oha /usr/local/bin/"
+
+[[package]]
+id = "xhs"
+name = "xh"
+description = "HTTP client CLI (x alternative)"
+category = "GitHub"
+provider = "github_repo"
+config = { repo_url = "https://github.com/ducaale/xh.git", clone_dest = "/opt/xh", skip_installer = true }
+post_install_msg = "Build with: cd /opt/xh && cargo build --release && sudo cp target/release/xh /usr/local/bin/"
+
+[[package]]
+id = "gping"
+name = "gping"
+description = "Ping with a graph"
+category = "GitHub"
+provider = "github_repo"
+config = { repo_url = "https://github.com/orf/gping.git", clone_dest = "/opt/gping", skip_installer = true }
+post_install_msg = "Build with: cd /opt/gping && cargo build --release && sudo cp target/release/gping /usr/local/bin/"
+
+[[package]]
+id = "fastfetch"
+name = "fastfetch"
+description = "System info fetch like neofetch"
+category = "GitHub"
+provider = "github_repo"
+config = { repo_url = "https://github.com/fastfetch-cli/fastfetch.git", clone_dest = "/opt/fastfetch", skip_installer = true }
+post_install_msg = "Build with: cd /opt/fastfetch && cmake -B build -DCMAKE_INSTALL_PREFIX=/usr && cmake --build build -j$(nproc) && sudo cmake --install build"

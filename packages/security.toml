@@ -1,0 +1,57 @@
+[[package]]
+id = "unattended-upgrades"
+name = "Unattended Upgrades"
+description = "Automatic security updates"
+category = "Security"
+provider = "apt"
+install_args = ["unattended-upgrades", "apt-listchanges"]
+post_install_msg = "Run: sudo dpkg-reconfigure --priority=low unattended-upgrades"
+
+[[package]]
+id = "ufw"
+name = "UFW"
+description = "Uncomplicated firewall"
+category = "Security"
+provider = "apt"
+install_args = ["ufw"]
+post_install_msg = "ufw allow OpenSSH && sudo ufw enable"
+
+[[package]]
+id = "fail2ban"
+name = "Fail2Ban"
+description = "Intrusion prevention"
+category = "Security"
+provider = "apt"
+install_args = ["fail2ban"]
+
+[[package]]
+id = "rsyslog"
+name = "rsyslog"
+description = "System logging"
+category = "Security"
+provider = "apt"
+install_args = ["rsyslog"]
+
+[[package]]
+id = "auditd"
+name = "auditd"
+description = "Linux audit framework"
+category = "Security"
+provider = "apt"
+install_args = ["auditd"]
+
+[[package]]
+id = "qemu-guest-agent"
+name = "QEMU Guest Agent"
+description = "VM guest integration"
+category = "Security"
+provider = "apt"
+install_args = ["qemu-guest-agent"]
+
+[[package]]
+id = "needrestart"
+name = "needrestart"
+description = "Restart services after upgrades"
+category = "Security"
+provider = "apt"
+install_args = ["needrestart"]

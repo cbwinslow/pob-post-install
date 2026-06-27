@@ -1,0 +1,45 @@
+[[package]]
+id = "ollama"
+name = "Ollama"
+description = "Run LLMs locally"
+category = "AI"
+provider = "script"
+install_args = ["bash", "-c", "curl -fsSL https://ollama.com/install.sh | sh"]
+verify_cmd = "ollama --version"
+post_install_msg = "ollama run llama3.1 to test"
+
+[[package]]
+id = "aichat"
+name = "aichat"
+description = "All-in-one AI chat CLI"
+category = "AI"
+provider = "script"
+install_args = ["bash", "-c", "curl -fsSL https://raw.githubusercontent.com/sigoden/aichat/main/install.sh | sh"]
+verify_cmd = "aichat --version"
+
+[[package]]
+id = "text-generation-webui"
+name = "Oobabooga WebUI"
+description = "LLM web interface"
+category = "AI"
+provider = "script"
+install_args = ["bash", "-c", "git clone https://github.com/oobabooga/text-generation-webui /opt/text-generation-webui"]
+verify_cmd = "test -d /opt/text-generation-webui"
+
+[[package]]
+id = "openwebui"
+name = "Open WebUI"
+description = "OpenAI-compatible web UI"
+category = "AI"
+provider = "script"
+install_args = ["bash", "-c", "docker run -d -p 3000:8080 --add-openai=compatibility ghcr.io/open-webui/open-webui:main"]
+verify_cmd = "docker ps --format '{{.Names}}' | grep openwebui"
+
+[[package]]
+id = "lmstudio"
+name = "LM Studio"
+description = "Local LLM inference (server)"
+category = "AI"
+provider = "script"
+install_args = ["bash", "-c", "curl -fsSL https://installers.lmstudio.ai/linux | sh"]
+verify_cmd = "test -x /usr/local/bin/lms"

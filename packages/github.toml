@@ -1,0 +1,96 @@
+[[package]]
+id = "act"
+name = "act"
+description = "Run GitHub Actions locally"
+category = "GitHub"
+provider = "github_repo"
+config = { repo_url = "https://github.com/nektos/act.git", clone_dest = "/opt/act", installer = "install.sh" }
+verify_cmd = "act --version"
+
+[[package]]
+id = "lefthook"
+name = "Lefthook"
+description = "Fast git hooks manager"
+category = "GitHub"
+provider = "github_repo"
+config = { repo_url = "https://github.com/evilmartians/lefthook.git", clone_dest = "/opt/lefthook" }
+post_install_msg = "For local install, download binary from GitHub releases"
+
+[[package]]
+id = "commitizen"
+name = "Commitizen"
+description = "Standardized commit messages"
+category = "GitHub"
+provider = "apt"
+install_args = ["commitizen"]
+verify_cmd = "cz --version"
+
+[[package]]
+id = "semantic-release"
+name = "semantic-release"
+description = "Automated versioning and releases"
+category = "GitHub"
+provider = "npm"
+install_args = ["-g", "semantic-release"]
+verify_cmd = "npx semantic-release --version"
+
+[[package]]
+id = "renovate"
+name = "Renovate"
+description = "Automated dependency updates"
+category = "GitHub"
+provider = "script"
+install_args = ["bash", "-c", "docker pull renovate/renovate:latest"]
+verify_cmd = "docker images renovate/renovate --format '{{.Tag}}'"
+
+[[package]]
+id = "dependabot-cli"
+name = "Dependabot CLI"
+description = "Run Dependabot locally"
+category = "GitHub"
+provider = "npm"
+install_args = ["-g", "@dependabot/cli"]
+verify_cmd = "dependabot --version"
+
+[[package]]
+id = "gh"
+name = "GitHub CLI"
+description = "GitHub command line tool"
+category = "GitHub"
+provider = "apt"
+install_args = ["gh"]
+verify_cmd = "gh --version"
+
+[[package]]
+id = "git"
+name = "Git"
+description = "Version control"
+category = "GitHub"
+provider = "apt"
+install_args = ["git"]
+
+[[package]]
+id = "git-lfs"
+name = "Git LFS"
+description = "Large file support for Git"
+category = "GitHub"
+provider = "apt"
+install_args = ["git-lfs"]
+
+[[package]]
+id = "pre-commit"
+name = "pre-commit"
+description = "Git hook framework"
+category = "GitHub"
+provider = "apt"
+install_args = ["pre-commit"]
+verify_cmd = "pre-commit --version"
+
+[[package]]
+id = "gh-git-credential"
+name = "GitHub Credential Helper"
+description = "Git credential helper for gh"
+category = "GitHub"
+provider = "script"
+install_args = ["bash", "-c", "gh auth setup-git"]
+verify_cmd = "gh auth status"

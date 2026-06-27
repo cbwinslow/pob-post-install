@@ -1,0 +1,62 @@
+[[package]]
+id = "postgresql"
+name = "PostgreSQL"
+description = "Advanced relational DB"
+category = "Databases"
+provider = "apt"
+install_args = ["postgresql", "postgresql-contrib"]
+verify_cmd = "psql --version"
+
+[[package]]
+id = "postgresql-16"
+name = "PostgreSQL 16"
+description = "PostgreSQL 16 specific"
+category = "Databases"
+provider = "apt"
+install_args = ["postgresql-16", "postgresql-client-16", "postgresql-contrib-16"]
+verify_cmd = "pg_lsclusters | grep '16 main'"
+
+[[package]]
+id = "mysql-server"
+name = "MySQL Server"
+description = "MySQL relational DB"
+category = "Databases"
+provider = "apt"
+install_args = ["mysql-server"]
+verify_cmd = "mysql --version"
+
+[[package]]
+id = "mariadb-server"
+name = "MariaDB"
+description = "MySQL-compatible DB"
+category = "Databases"
+provider = "apt"
+install_args = ["mariadb-server"]
+verify_cmd = "mysql --version"
+
+[[package]]
+id = "redis-server"
+name = "Redis"
+description = "In-memory data store"
+category = "Databases"
+provider = "apt"
+install_args = ["redis-server"]
+verify_cmd = "redis-cli --version"
+
+[[package]]
+id = "sqlite3"
+name = "SQLite"
+description = "Embedded SQL database"
+category = "Databases"
+provider = "apt"
+install_args = ["sqlite3", "libsqlite3-dev"]
+verify_cmd = "sqlite3 --version"
+
+[[package]]
+id = "mongodb-org"
+name = "MongoDB"
+description = "Document database (MongoDB repo)"
+category = "Databases"
+provider = "script"
+install_args = ["bash", "-c", "curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor && echo \"deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/7.0 multiverse\" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list && apt update && apt install -y mongodb-org"]
+verify_cmd = "mongod --version"
