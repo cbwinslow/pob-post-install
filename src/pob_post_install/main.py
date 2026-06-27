@@ -26,6 +26,7 @@ from textual.widgets import (
     TabbedContent,
     TabPane,
     Input,
+    TextArea,
 )
 from textual.binding import Binding
 from textual.reactive import reactive
@@ -41,6 +42,9 @@ from pob_post_install.history_discovery import HistoryDiscovery
 from pob_post_install.diff import DiffEngine
 from pob_post_install.health import HealthChecker
 from pob_post_install.updates import UpdateChecker
+from pob_post_install.editor import ConfigEditor
+from pob_post_install.remote import RemoteManager
+from pob_post_install.plugins import PluginRegistry
 from pob_post_install.timetravel import TimeTravel
 from pob_post_install.themes import ThemeManager
 from pob_post_install.hooks import HookManager
@@ -108,6 +112,59 @@ class StatusSpinner(Static):
         self.update(f"{frame} {self._text}")
         self._frame_index += 1
         self.set_interval(0.08, self._update_frame, name="braille-spin")
+
+
+class ConfigEditorScreen(ModalScreen):
+    CSS = """
+    ConfigEditorScreen {
+        align: center middle;
+    }
+    #editor-dialog {
+        width: 90;
+        height: 24;
+        border: thick $primary;
+        background: $surface;
+        padding: 1 2;
+    }
+    #editor-area {
+        height: 1fr;
+        border: thick $primary;
+    }
+    """
+
+    def __init__(self, path, **kwargs):
+        super().__init__(**kwargs)
+        self.path = Path(path)
+
+    def compose(self) -> ComposeResult:
+        yield Static(f"Edit: {self.path}", classes="modal-title")
+        container = Vertical(id="editor-dialog")
+        yield container
+        with container:
+            from textual.widgets import TextArea
+            content = ""
+            if self.path.exists():
+                try:
+                    content = self.path.read_text(errors="ignore")
+                except Exception as e:
+                    content = f"# Error reading file: {e}"
+            yield TextArea(content, id="editor-area", language="python")
+            with Horizontal():
+                yield Button("Save", variant="primary", id="btn-save-editor")
+                yield Button("Cancel", variant="error", id="btn-cancel-editor")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "btn-save-editor":
+            textarea = self.query_one("#editor-area", TextArea)
+            try:
+                self.path.parent.mkdir(parents=True, exist_ok=True)
+                self.path.write_text(textarea.text)
+                self.write_log(f"Saved: {self.path}")
+            except Exception as e:
+                self.write_log(f"Save failed: {e}")
+            self.app.pop_screen()
+        elif event.button.id == "btn-cancel-editor":
+            self.app.pop_screen()
 
 
 class SummaryScreen(ModalScreen):
@@ -222,6 +279,10 @@ class InstallerApp(App):
         padding: 0 1;
         text-style: bold;
     }
+    #config-controls {
+        height: 3;
+        padding: 1;
+    }
     #config-panel {
         padding: 1;
         height: 1fr;
@@ -305,6 +366,8 @@ class InstallerApp(App):
     _diff_result: dict[str, Any] = {}
     _timetravel_receipts: list[Path] = []
     _health_results: list[dict[str, Any]] = []
+    _remote_results: list[dict[str, Any]] = []
+    _plugin_registry: PluginRegistry | None = None
 
     def __init__(self, packages: list[Package], **kwargs):
         super().__init__(**kwargs)
@@ -341,6 +404,8 @@ class InstallerApp(App):
                     with TabPane("Packages", id="tab-packages"):
                         yield PackageTable(id="packages", cursor_type="row")
                     with TabPane("Config", id="tab-config"):
+                        with Horizontal(id="config-controls"):
+                            yield Button("Edit First Config", id="btn-edit-config", variant="primary")
                         with ScrollableContainer(id="config-scroll"):
                             yield Static("Select packages on the Packages tab to browse their configuration files.", id="config-panel")
                     with TabPane("Search", id="tab-search"):
@@ -1014,6 +1079,43 @@ class InstallerApp(App):
         if not self._timetravel_receipts:
             table.add_row("", "No receipts found", "", "", "", "", key="tt-empty")
 
+    def action_run_remote(self) -> None:
+        tabbed = self.query_one("#tabbed", TabbedContent)
+        remote_tab = self.query_one("#tab-remote", TabPane)
+        tabbed.active = remote_tab
+        target = self.query_one("#remote-target", Input).value.strip()
+        if not target:
+            self.write_log("Enter an SSH target first.")
+            return
+        table = self.query_one("#remote-table", PackageTable)
+        table.clear(columns=False)
+        table.add_column("Host", key="host")
+        table.add_column("Module", key="module")
+        table.add_column("Args", key="args")
+        table.add_column("Status", key="status")
+        table.zebra_stripes = True
+        table.cursor_type = "row"
+        self._remote_results = []
+        selected_ids = [k for k, v in self.selected_map.items() if v]
+        for pkg_id in selected_ids[:5]:
+            result = RemoteManager.run_adhoc(target, "apt", f"name={pkg_id} state=present")
+            self._remote_results.append(result)
+            status = "OK" if result.get("ok") else "FAIL"
+            table.add_row(
+                target,
+                "ansible",
+                pkg_id,
+                status,
+                key=pkg_id,
+            )
+        self.write_log(f"Remote run complete for {len(self._remote_results)} packages.")
+
+    def action_load_plugins(self) -> None:
+        self._plugin_registry = PluginRegistry()
+        plugin_dir = Path.home() / ".config" / "pob-post-install" / "plugins"
+        self._plugin_registry.load_plugins_from(plugin_dir)
+        self.write_log(f"Plugins loaded from {plugin_dir}")
+
     def action_score_health(self) -> None:
         tabbed = self.query_one("#tabbed", TabbedContent)
         health_tab = self.query_one("#tab-health", TabPane)
@@ -1070,6 +1172,24 @@ class InstallerApp(App):
             except Exception as e:
                 table.add_row(pkg.id, pkg.provider.value, "Error", str(e), key=pkg.id)
         self.write_log("Update check complete.")
+
+    def action_edit_config(self) -> None:
+        selected_ids = [k for k, v in self.selected_map.items() if v]
+        if not selected_ids:
+            self.write_log("Select a package first to edit its config.")
+            return
+        pkg_id = selected_ids[0]
+        paths = ConfigEditor.resolve(pkg_id)
+        if not paths:
+            self.write_log(f"No config directories found for {pkg_id}")
+            return
+        config_dir = paths[0]
+        files = [f for f in config_dir.iterdir() if f.is_file()]
+        if not files:
+            self.write_log(f"No files in {config_dir}")
+            return
+        target = files[0]
+        self.push_screen(ConfigEditorScreen(target))
 
     def action_export_recipe(self) -> None:
         selected_ids = [k for k, v in self.selected_map.items() if v]
@@ -1168,6 +1288,9 @@ class InstallerApp(App):
         if btn_id == "btn-import-discovery":
             self.action_import_discovery()
             return
+        if btn_id == "btn-edit-config":
+            self.action_edit_config()
+            return
         if btn_id == "btn-export-recipe":
             self.action_export_recipe()
             return
@@ -1188,6 +1311,12 @@ class InstallerApp(App):
             return
         if btn_id == "btn-check-updates":
             self.action_check_updates()
+            return
+        if btn_id == "btn-run-remote":
+            self.action_run_remote()
+            return
+        if btn_id == "btn-load-plugins":
+            self.action_load_plugins()
             return
         if btn_id in ("btn-search-apt", "btn-search-pypi"):
             query = self.query_one("#search-query", Input).value.strip()
