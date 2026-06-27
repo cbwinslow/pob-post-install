@@ -38,6 +38,10 @@ from pob_post_install.receipts import ReceiptLogger
 from pob_post_install.rollback import RollbackManager
 from pob_post_install.inventory import InventoryCollector
 from pob_post_install.history_discovery import HistoryDiscovery
+from pob_post_install.themes import ThemeManager
+from pob_post_install.hooks import HookManager
+from pob_post_install.recipes import RecipeExporter, Recipe
+from pob_post_install.models.recipe import ExportFormat
 
 
 class CategorySidebar(Static):
@@ -276,6 +280,8 @@ class InstallerApp(App):
         Binding("i", "refresh_inventory", "Inventory"),
         Binding("d", "scan_history", "Scan History"),
         Binding("shift+d", "scan_ansible", "Scan Ansible"),
+        Binding("e", "export_recipe", "Export Recipe"),
+        Binding("t", "cycle_theme", "Cycle Theme"),
     ]
 
     packages: list[Package] = []
@@ -298,6 +304,9 @@ class InstallerApp(App):
         self._rollback_manager: RollbackManager | None = None
         self._last_receipt_path: Path | None = None
         self._mounted = False
+        self._hook_manager = HookManager()
+        self._theme = "dark"
+        self._recipies: list[Recipe] = []
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -888,6 +897,41 @@ class InstallerApp(App):
         self.refresh_package_list()
         self.write_log(f"Imported {added} discovered packages into Packages tab.")
 
+    def action_cycle_theme(self) -> None:
+        themes = ThemeManager.available_themes()
+        idx = themes.index(self._theme) + 1
+        idx %= len(themes)
+        self._theme = themes[idx]
+        self.css = ThemeManager.get_theme(self._theme)
+        self.write_log(f"Theme switched to: {self._theme}")
+
+    def action_export_recipe(self) -> None:
+        selected_ids = [k for k, v in self.selected_map.items() if v]
+        if not selected_ids:
+            self.write_log("Select packages to export first.")
+            return
+        selected = [p for p in self.packages if p.id in selected_ids]
+        recipe = Recipe(
+            name="exported-recipe",
+            description="Exported from TUI",
+            packages=[
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "provider": p.provider.value,
+                    "install_args": p.install_args,
+                }
+                for p in selected
+            ],
+        )
+        out = Path("recipes") / f"{recipe.name}.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(recipe.to_dict(), indent=2))
+        self.write_log(f"Recipe exported to {out}")
+
+    def action_import_recipe(self) -> None:
+        self.write_log("Recipe import not yet implemented. Use JSON recipe files under recipes/.")
+
     def action_save_profile(self) -> None:
         from pathlib import Path
         import json
@@ -957,6 +1001,12 @@ class InstallerApp(App):
             return
         if btn_id == "btn-import-discovery":
             self.action_import_discovery()
+            return
+        if btn_id == "btn-export-recipe":
+            self.action_export_recipe()
+            return
+        if btn_id == "btn-import-recipe":
+            self.action_import_recipe()
             return
         if btn_id in ("btn-search-apt", "btn-search-pypi"):
             query = self.query_one("#search-query", Input).value.strip()
