@@ -1,38 +1,42 @@
 # Implementation Plan
 
 ## Architecture Decision
-- Use Ansible as the backend for remote target support (12/14 items). Native SSH is deferred.
+- Remote target support uses Ansible as backend (avoids duplicating SSH/inventory logic).
 - Recipes are JSON/YAML-first; rendered to shell/Ansible/Compose/Pulumi/TOFU at export time.
-- Hooks are per-package and global, stored alongside receipts.
+- Hooks are per-package and global, stored in `~/.config/pob-post-install/hooks/`.
 - Time-travel reuses receipt JSON plus optional apt/docker/image snapshots.
-- Config editing is read/write through a TUI text editor backed by the local filesystem; remote editing goes through Ansible delegated tasks.
+- Config editing is read/write through a TUI text editor backed by the local filesystem.
 
-## Phased Delivery
+## Completed: Phase 1 — Foundation
+- `models/recipe.py`: Recipe dataclass, ExportFormat enum.
+- `recipes.py`: Export selected packages to shell script, Ansible playbook, Docker Compose, Pulumi Python, OpenTofu HCL.
+- `hooks.py`: Global and per-package pre/post hooks.
+- `themes.py`: Theme Manager with dark/light/high-contrast switcher (TUI wired, needs full CSS polish).
+- `diff.py`: Compare installed vs desired, generate diff report.
+- `timetravel.py`: Browse receipts, diff two runs.
+- `health.py`: Package health/security scoring placeholder.
+- `updates.py`: Check APT/NPM/PIP for newer versions.
+- `editor.py`: Inline config file read/write.
+- `remote.py`: Ansible inventory builder and ad-hoc runner.
+- `plugins.py`: Plugin registry and external loader.
+- `main.py` changes: new Recipes tab, Hooks tab, Theme cycle binding (`t`), Export binding (`e`).
 
-### Phase 1 — Foundation
-1. `models/recipe.py`: Recipe dataclass, ExportFormat enum, provider adapters.
-2. `recipes.py`: Export selected packages to shell script, Ansible playbook, Docker Compose, Pulumi Python, OpenTofu HCL.
-3. `hooks.py`: Global and per-package pre/post hooks; hook discovery in `~/.config/pob-post-install/hooks/`.
-4. `themes.py`: Theme Manager, light/dark/high-contrast CSS switcher.
-5. TUI: Add Recipes tab, Hooks tab, Theme switcher binding.
+## Next: Phase 2 — Diff and Time-Travel UI
+- Add **Diff** tab with desired vs installed comparison.
+- Add **Time-Travel** tab with receipt browser and diff view.
+- Wire `diff.py` and `timetravel.py` into TUI.
 
-### Phase 2 — Diff and Time-Travel
-6. `diff.py`: Compare installed vs desired, generate diff report, highlight extras.
-7. `timetravel.py`: Browse receipts, diff two runs, replay from checkpoint.
-8. TUI: Add Diff tab, Time-Travel tab, receipt browser modal.
+## Next: Phase 3 — Health, Updates, Config Editing
+- Add **Health** tab with package scores.
+- Add **Updates** tab with available version checks.
+- Enable inline config editing from Config tab.
 
-### Phase 3 — Health, Updates, Config Editing
-9. `health.py`: Score packages by popularity (APT downloads / npm / PyPI), flag EOL packages, optional CVE lookup placeholder.
-10. `updates.py`: Query APT/NPM/PIP/PUIPM/TOFU for newer versions.
-11. `editor.py`: Inline text editor for config files in Config tab.
-12. TUI: Add Health tab, Updates tab, inline config editor.
+## Next: Phase 4 — Remote and Plugins
+- Add **Remote** tab: target list, Ansible run, result viewer.
+- Add **Plugins** screen: load external provider scripts.
+- Backup before install: snapshot `~/.config/<id>` before modification.
 
-### Phase 4 — Remote and Plugins
-13. `remote.py`: Ansible inventory builder, ad-hoc runner, result parser.
-14. `plugins.py`: Plugin registry, external script/provider registration, plugin loader.
-15. TUI: Add Remote tab, plugin manager screen.
-
-### Phase 5 — Polish
-16. Backup before install (snapshot `~/.config/<id>` and `/opt/<id>` for github_repo).
-17. Batch operation improvements with retry/backoff.
-18. Integration tests and E2E smoke test script.
+## Next: Phase 5 — Polish
+- Batch operations with retry/backoff.
+- Integration tests and E2E smoke script.
+- Expand health CVE lookup.
