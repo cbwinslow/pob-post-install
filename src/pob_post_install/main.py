@@ -38,6 +38,8 @@ from pob_post_install.receipts import ReceiptLogger
 from pob_post_install.rollback import RollbackManager
 from pob_post_install.inventory import InventoryCollector
 from pob_post_install.history_discovery import HistoryDiscovery
+from pob_post_install.diff import DiffEngine
+from pob_post_install.timetravel import TimeTravel
 from pob_post_install.themes import ThemeManager
 from pob_post_install.hooks import HookManager
 from pob_post_install.recipes import RecipeExporter, Recipe
@@ -282,6 +284,8 @@ class InstallerApp(App):
         Binding("shift+d", "scan_ansible", "Scan Ansible"),
         Binding("e", "export_recipe", "Export Recipe"),
         Binding("t", "cycle_theme", "Cycle Theme"),
+        Binding("shift+d", "run_diff", "Run Diff"),
+        Binding("shift+t", "load_timetravel", "Time Travel"),
     ]
 
     packages: list[Package] = []
@@ -296,6 +300,8 @@ class InstallerApp(App):
     container_runtime: reactive[str] = reactive("unknown")
     inventory: reactive[dict[str, Any]] = reactive({})
     _discovery_items: list[dict] = []
+    _diff_result: dict[str, Any] = {}
+    _timetravel_receipts: list[Path] = []
 
     def __init__(self, packages: list[Package], **kwargs):
         super().__init__(**kwargs)
@@ -333,8 +339,7 @@ class InstallerApp(App):
                         yield PackageTable(id="packages", cursor_type="row")
                     with TabPane("Config", id="tab-config"):
                         with ScrollableContainer(id="config-scroll"):
-                            config_container = Vertical(id="config-container")
-                            yield config_container
+                            yield Static("Select packages on the Packages tab to browse their configuration files.", id="config-panel")
                     with TabPane("Search", id="tab-search"):
                         yield Static("Search APT or PyPI packages and inspect them before adding.", id="search-hint")
                         yield Horizontal(
@@ -518,6 +523,41 @@ class InstallerApp(App):
             config_found = self._scan_and_mount_config(container, pkg_id)
             if not config_found:
                 container.mount(Static("  No configuration directories found in ~/.config or home.", classes="config-file"))
+
+    def _scan_config_lines(self, pkg_id: str) -> list[str]:
+        home = Path.home()
+        candidate_dirs = [
+            home / ".config" / pkg_id,
+            home / f".{pkg_id}",
+            home / ".local" / "share" / pkg_id,
+        ]
+        lines: list[str] = []
+        found_any = False
+        for config_dir in candidate_dirs:
+            if not config_dir.exists() or not config_dir.is_dir():
+                continue
+            found_any = True
+            lines.append(f"[bold cyan]{config_dir}[/bold cyan]")
+            try:
+                entries = sorted(config_dir.iterdir(), key=lambda p: (p.is_file(), p.name.lower()))
+                for entry in entries[:100]:
+                    icon = "📄" if entry.is_file() else "📁"
+                    size = ""
+                    if entry.is_file():
+                        try:
+                            size = f" ({entry.stat().st_size} bytes)"
+                        except OSError:
+                            size = ""
+                    lines.append(f"  {icon} {entry.name}{size}")
+                if len(entries) > 100:
+                    lines.append(f"  ... and {len(entries) - 100} more entries")
+            except PermissionError:
+                lines.append("  [red]Permission denied[/red]")
+            except OSError as e:
+                lines.append(f"  [red]Error: {e}[/red]")
+        if not found_any:
+            lines.append("  No configuration directories found in ~/.config or home.")
+        return lines
 
     def _scan_and_mount_config(self, container: Vertical, pkg_id: str) -> bool:
         home = Path.home()
@@ -905,6 +945,73 @@ class InstallerApp(App):
         self.css = ThemeManager.get_theme(self._theme)
         self.write_log(f"Theme switched to: {self._theme}")
 
+    def action_run_diff(self) -> None:
+        tabbed = self.query_one("#tabbed", TabbedContent)
+        diff_tab = self.query_one("#tab-diff", TabPane)
+        tabbed.active = diff_tab
+        desired_ids = {p.id for p in self.packages}
+        installed = {}
+        try:
+            import asyncio
+            loop = asyncio.get_event_loop()
+            collector = InventoryCollector()
+            installed = loop.run_until_complete(collector.collect())
+        except Exception as e:
+            self.write_log(f"Diff failed: {e}")
+            return
+        result = DiffEngine.compare(desired_ids, installed)
+        self._diff_result = result
+        panel = self.query_one("#diff-result", Static)
+        lines = [
+            f"Desired: {result['summary']['desired_count']} packages",
+            f"Installed: {result['summary']['installed_count']} packages",
+            f"Missing: {result['summary']['missing_count']}",
+            f"Extra: {result['summary']['extra_count']}",
+            "",
+        ]
+        if result["missing"]:
+            lines.append("[red]Missing packages:[/red]")
+            for pkg in result["missing"][:50]:
+                lines.append(f"  - {pkg}")
+        if result["extra"]:
+            lines.append("[yellow]Extra packages:[/yellow]")
+            for pkg in result["extra"][:50]:
+                lines.append(f"  - {pkg}")
+        panel.update(chr(10).join(lines))
+        self.write_log(f"Diff complete: {result['summary']['missing_count']} missing, {result['summary']['extra_count']} extra")
+
+    def action_load_timetravel(self) -> None:
+        tabbed = self.query_one("#tabbed", TabbedContent)
+        tt_tab = self.query_one("#tab-timetravel", TabPane)
+        tabbed.active = tt_tab
+        self._timetravel_receipts = TimeTravel.list_receipts()
+        table = self.query_one("#timetravel-table", PackageTable)
+        table.clear(columns=False)
+        table.add_column("Selected", key="selected", width=8)
+        table.add_column("Run ID", key="run_id")
+        table.add_column("Started", key="started")
+        table.add_column("Total", key="total")
+        table.add_column("OK", key="ok")
+        table.add_column("Fail", key="fail")
+        table.zebra_stripes = True
+        table.cursor_type = "row"
+        for path in self._timetravel_receipts:
+            data = TimeTravel.load(path)
+            run_id = data.get("run_id", path.stem)
+            started = data.get("started_at", "")
+            summary = data.get("summary", {})
+            table.add_row(
+                "[ ]",
+                run_id,
+                started,
+                str(summary.get("total", 0)),
+                str(summary.get("ok", 0)),
+                str(summary.get("fail", 0)),
+                key=path.name,
+            )
+        if not self._timetravel_receipts:
+            table.add_row("", "No receipts found", "", "", "", "", key="tt-empty")
+
     def action_export_recipe(self) -> None:
         selected_ids = [k for k, v in self.selected_map.items() if v]
         if not selected_ids:
@@ -1007,6 +1114,15 @@ class InstallerApp(App):
             return
         if btn_id == "btn-import-recipe":
             self.action_import_recipe()
+            return
+        if btn_id == "btn-run-diff":
+            self.action_run_diff()
+            return
+        if btn_id == "btn-load-receipts":
+            self.action_load_timetravel()
+            return
+        if btn_id == "btn-diff-receipts":
+            self.write_log("Select two receipts in the table first.")
             return
         if btn_id in ("btn-search-apt", "btn-search-pypi"):
             query = self.query_one("#search-query", Input).value.strip()
